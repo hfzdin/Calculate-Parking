@@ -1,20 +1,62 @@
 import math
 import datetime
 
+#set the rates according to weekdays,weekends
 rateWeekdaysFirst3hour=3
 rateWeekdaysAfter3hour=1.5
 rateWeekendFirst3hour=5
 rateWeekendsAfter3hour=2
+withinGracePeriod=True
+parkingFare=0.0
 
+
+#get input from user date of the car go into the parking lot
 dateGoIn = input('Please enter the date vehicle go in the parking formatted as DD/MM/YYYY: ')
-dateGoIn=datetime.datetime.strptime(dateGoIn,"%d/%m/%Y").date()
+dateGoIn =datetime.datetime.strptime(dateGoIn,"%d/%m/%Y %H:%M")
 
+#get input from user date of the car go out of the parking lot
 dateGoOut = input('Please enter the date vehicle go out of the parking formatted as DD/MM/YYYY: ')
-dateGoOut=datetime.datetime.strptime(dateGoOut,"%d/%m/%Y").date()
+dateGoOut=datetime.datetime.strptime(dateGoOut,"%d/%m/%Y %H:%M")
 
-withinGracePeriod = input('Is the vehicle within grace period? ')
+withinGracePeriodString = input('Is the vehicle within grace period? Y or N?')
 
-print("date go in : "+dateGoIn.strftime('%d/%B/%Y'))
+if withinGracePeriodString=="Y":
+	withinGracePeriod=True
+else:
+	withinGracePeriod=False
 
-print("date go out : "+dateGoOut.strftime('%d/%B/%Y'))
 
+print("date go in : "+dateGoIn.strftime('%d/%B/%Y %H:%M'))
+
+print("date go out : "+dateGoOut.strftime('%d/%B/%Y %H:%M'))
+
+
+dateTimeDifference=0;
+dateTimeDifferenceInHours=0;
+
+# Get the difference between datetimes (as timedelta)
+if((dateGoIn.weekday()<5) and (dateGoOut.weekday()<5 )):
+	dateTimeDifference = dateGoOut - dateGoIn
+	# Divide difference in seconds by number of seconds in hour (3600) 
+	if(dateTimeDifference>datetime.timedelta(hours=1)):
+		dateTimeDifferenceInHours = dateTimeDifference.total_seconds() / 3600
+		dateTimeDifferenceInHours =int(dateTimeDifferenceInHours)
+
+	if not withinGracePeriod:
+			parkingFare+=rateWeekdaysFirst3hour
+			if(dateTimeDifferenceInHours>3):
+				parkingFare=parkingFare+((dateTimeDifferenceInHours-3)*rateWeekdaysAfter3hour)
+			else:
+				parkingFare=parkingFare+rateWeekdaysAfter3hour
+
+	elif withinGracePeriod:
+		parkingFare+=rateWeekdaysFirst3hour
+		if(dateTimeDifferenceInHours>3):
+			parkingFare=parkingFare+((dateTimeDifferenceInHours-3)*rateWeekdaysAfter3hour)
+		
+
+if(withinGracePeriod):
+	print("Car fare = "+ str(parkingFare)+".Car parked for : "+  str(dateTimeDifferenceInHours)+ " hours and within grace periond.")
+
+else:
+	print("Car fare = "+ str(parkingFare)+".Car parked for : "+  str(dateTimeDifferenceInHours)+ " hours and over grace periond.")
