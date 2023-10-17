@@ -4,8 +4,10 @@ import datetime
 #set the rates according to weekdays,weekends
 rateWeekdaysFirst3hour=3
 rateWeekdaysAfter3hour=1.5
+maxRateWeekdays=20
 rateWeekendFirst3hour=5
 rateWeekendsAfter3hour=2
+maxRateWeekend=40
 withinGracePeriod=True
 parkingFare=0.0
 
@@ -43,19 +45,26 @@ if((dateGoIn.weekday()<5) and (dateGoOut.weekday()<5 )):
 		dateTimeDifferenceInHours = dateTimeDifference.total_seconds() / 3600
 		dateTimeDifferenceInHours =int(dateTimeDifferenceInHours)
 
+	if(dateTimeDifferenceInHours>24):
+		parkingFare=parkingFare+maxRateWeekdays;
+		remainingParkingHours=dateTimeDifferenceInHours-24
+		if(dateGoOut.weekday()>5):
+			if(remainingParkingHours>3):
+				parkingFare=parkingFare+((remainingParkingHours-3)*rateWeekdaysAfter3hour)
+			else:
+				parkingFare=parkingFare+rateWeekdaysAfter3hour
+		else:
+			if(remainingParkingHours>3):
+				parkingFare=parkingFare+((remainingParkingHours-3)*rateWeekendsAfter3hour)
+			else:
+				parkingFare=parkingFare+rateWeekendsAfter3hour
+
 	if not withinGracePeriod:
 			parkingFare+=rateWeekdaysFirst3hour
 			if(dateTimeDifferenceInHours>3):
 				parkingFare=parkingFare+((dateTimeDifferenceInHours-3)*rateWeekdaysAfter3hour)
 			else:
 				parkingFare=parkingFare+rateWeekdaysAfter3hour
-
-	elif withinGracePeriod:
-		parkingFare+=rateWeekdaysFirst3hour
-		if(dateTimeDifferenceInHours>3):
-			parkingFare=parkingFare+((dateTimeDifferenceInHours-3)*rateWeekdaysAfter3hour)
-
-
 else:
 	dateTimeDifference = dateGoOut - dateGoIn
 	# Divide difference in seconds by number of seconds in hour (3600) 
@@ -63,19 +72,32 @@ else:
 		dateTimeDifferenceInHours = dateTimeDifference.total_seconds() / 3600
 		dateTimeDifferenceInHours =int(dateTimeDifferenceInHours)
 
+	if((dateTimeDifferenceInHours>24) and (dateGoIn.weekday()<5)):
+		parkingFare=parkingFare+maxRateWeekdays;
+
+	elif((dateTimeDifferenceInHours>24) and (dateGoIn.weekday()>5)):
+		parkingFare=parkingFare+maxRateWeekend;
+
+	print("Car fare = "+ str(parkingFare))
+
+
+	if(dateTimeDifferenceInHours>24):
+		remainingParkingHours=dateGoOut.hour
+		if(dateGoOut.weekday()<5):
+			parkingFare=parkingFare+(remainingParkingHours*rateWeekdaysAfter3hour)
+			
+		else:
+			parkingFare=parkingFare+(remainingParkingHours*rateWeekendsAfter3hour)
+
+
+	print("Car fare = "+ str(parkingFare))
+
 	if not withinGracePeriod:
 			parkingFare+=rateWeekendFirst3hour
 			if(dateTimeDifferenceInHours>3):
 				parkingFare=parkingFare+((dateTimeDifferenceInHours-3)*rateWeekendsAfter3hour)
 			else:
 				parkingFare=parkingFare+rateWeekendsAfter3hour
-
-	elif withinGracePeriod:
-		parkingFare+=rateWeekendFirst3hour
-		if(dateTimeDifferenceInHours>3):
-			parkingFare=parkingFare+((dateTimeDifferenceInHours-3)*rateWeekendsAfter3hour)
-
-
 	
 
 if(withinGracePeriod):
